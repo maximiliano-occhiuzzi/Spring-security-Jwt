@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -80,7 +81,10 @@ public class GatewaySecurityConfig {
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
                 .decoder(jwtDecoder)
                 .jwtAuthenticationConverter(jwtAuthenticationConverter)
-            ));
+            ))
+            // Despues de validar el JWT, agrega X-User-Username y X-User-Roles
+            // a la request que se rutea a los microservicios (paso del practico).
+            .addFilterAfter(new UserHeadersFilter(), BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }
